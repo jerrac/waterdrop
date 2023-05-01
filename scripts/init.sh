@@ -242,6 +242,10 @@ echo "Adding asset packagist.";
 # move into the new src directory so we can update composer.json.
 cd "${ROOT_DIR}app/src";
 
+# Add composer require oomphinc/composer-installers-extender
+docker run --rm --user $(id -u):$(id -g) --volume ${ROOT_DIR}tmp/composer_cache:/tmp --volume ${ROOT_DIR}app/src:/app \
+      composer require --ignore-platform-reqs --no-interaction --no-ansi oomphinc/composer-installers-extender;
+
 # Use jq to add the new config.
 cat composer.json | jq '. *= {
                                  "repositories":
@@ -253,6 +257,12 @@ cat composer.json | jq '. *= {
                                      "type": "composer",
                                      "url": "https://asset-packagist.org"
                                  }],
+                                 "config": {
+                                     "allow-plugins": {
+                                       "oomphinc/composer-installers-extender": true
+                                     },
+                                     "sort-packages": true
+                                   },
                                  "extra":
                                  {
                                      "installer-types":
