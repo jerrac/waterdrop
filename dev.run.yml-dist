@@ -1,0 +1,103 @@
+version: "3.9"
+
+networks:
+  DOCKERNET:
+    external: True
+
+volumes:
+  PROJECTNAME_db_data:
+    external: True
+  PROJECTNAME_app_data_public:
+    external: True
+  PROJECTNAME_app_data_private:
+    external: True
+  PROJECTNAME_share:
+    external: True
+
+secrets:
+  PROJECTNAME_db_host:
+    file: ./secrets/PROJECTNAME_db_host
+  PROJECTNAME_db_name:
+    file: ./secrets/PROJECTNAME_db_name
+  PROJECTNAME_db_pass:
+    file: ./secrets/PROJECTNAME_db_pass
+  PROJECTNAME_db_port:
+    file: ./secrets/PROJECTNAME_db_port
+  PROJECTNAME_db_user:
+    file: ./secrets/PROJECTNAME_db_user
+  PROJECTNAME_db_root_pass:
+    file: ./secrets/PROJECTNAME_db_root_pass
+  PROJECTNAME_drupal_settings_hash_salt:
+    file: ./secrets/PROJECTNAME_drupal_settings_hash_salt
+  PROJECTNAME_environment:
+    file: ./secrets/PROJECTNAME_environment
+  PROJECTNAME_varnish_secret:
+    file: ./secrets/PROJECTNAME_varnish_secret
+
+services:
+  PROJECTNAME-app:
+    image: PROJECTNAME:dev
+    container_name: PROJECTNAME-app
+    hostname: PROJECTNAME-app
+    restart: "always"
+    depends_on:
+      - PROJECTNAME-db
+    networks:
+      DOCKERNET:
+    ports:
+      - "127.0.0.1:HOSTPORT:80"
+    volumes:
+#      - type: bind
+#        source: ./app/src/
+#        target: /var/www/html/
+#      - type: bind
+#        source: ./app/docker-config/drupal/settings.php
+#        target: /var/www/html/web/sites/default/settings.php
+      - type: volume
+        source: PROJECTNAME_app_data_public
+        target: /var/www/html/web/sites/default/files
+      - type: volume
+        source: PROJECTNAME_app_data_private
+        target: /drupal_private
+      - type: volume
+        source: PROJECTNAME_share
+        target: /opt/share
+    environment:
+      VARNISH_FLAGS: ""
+      VARNISH_SECRET_FILE: /run/secrets/PROJECTNAME_varnish_secret
+      VARNISH_STORAGE: ""
+    secrets:
+      - PROJECTNAME_db_host
+      - PROJECTNAME_db_name
+      - PROJECTNAME_db_pass
+      - PROJECTNAME_db_port
+      - PROJECTNAME_db_user
+      - PROJECTNAME_drupal_settings_hash_salt
+      - PROJECTNAME_environment
+      - PROJECTNAME_varnish_secret
+  PROJECTNAME-db:
+    image: library/mariadb:10.9
+    container_name: PROJECTNAME-db
+    hostname: PROJECTNAME-db
+    restart: "always"
+    networks:
+      DOCKERNET:
+    ports:
+      - "127.0.0.1:DBPORT:3306"
+    environment:
+      MARIADB_DATABASE_FILE: /run/secrets/PROJECTNAME_db_name
+      MARIADB_USER_FILE: /run/secrets/PROJECTNAME_db_user
+      MARIADB_PASSWORD_FILE: /run/secrets/PROJECTNAME_db_pass
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/PROJECTNAME_db_root_pass
+    volumes:
+      - type: volume
+        source: PROJECTNAME_db_data
+        target: /var/lib/mysql
+      - type: volume
+        source: PROJECTNAME_share
+        target: /opt/share
+    secrets:
+      - PROJECTNAME_db_name
+      - PROJECTNAME_db_pass
+      - PROJECTNAME_db_user
+      - PROJECTNAME_db_root_pass

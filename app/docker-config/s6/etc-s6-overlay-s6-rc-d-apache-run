@@ -1,0 +1,2 @@
+#!/command/with-contenv /bin/bash
+/usr/sbin/apachectl -D FOREGROUND

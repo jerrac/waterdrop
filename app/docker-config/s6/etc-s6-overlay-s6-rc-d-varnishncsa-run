@@ -1,0 +1,2 @@
+#!/command/with-contenv /bin/bash
+/usr/bin/varnishncsa -b -c  -F '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-agent}i" X-Forwarded-For: %{X-Forwarded-For}i'
