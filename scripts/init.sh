@@ -56,7 +56,7 @@ print_help()
 	printf '\t%s\n' "-P, --project-name: Set the project name. (default: 'waterdrop')"
 	printf '\t%s\n' "-D, --drupal: Set the major Drupal version. (default: '^10')"
 	printf '\t%s' "-e, --extra-project: An extra project to include in composer.json. Repeat for multiple values. Like drupal/devel. (default array elements:"
-	printf " '%s'" 'drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/varnish_purge' 'drupal/views_bulk_operations'
+	printf " '%s'" 'drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/purge_purger_http' 'drupal/views_bulk_operations'
 	printf ')\n'
 	printf '\t%s\n' "-r, --reset-extra-projects, --no-reset-extra-projects: Do not use the default list of additional composer projects. (off by default)"
 	printf '\t%s\n' "--skip-asset-packagist, --no-skip-asset-packagist: Do not add asset packagist to composer.json (off by default)"
@@ -196,7 +196,7 @@ fi
 USE_EXTRA_PROJECTS=();
 if [[ $_arg_reset_extra_projects == "on" ]]; then
   echo "Resetting extra projects.";
-  DEFAULT_EXTRAS=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic' 'drupal/purge' 'drupal/purge_purger_http' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/varnish_purge' 'drupal/views_bulk_operations');
+  DEFAULT_EXTRAS=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic' 'drupal/purge' 'drupal/purge_purger_http' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/views_bulk_operations');
   NEW_EXTRAS=();
   for i in ${_arg_extra_project[@]}  ; do
       KEEP=1;
