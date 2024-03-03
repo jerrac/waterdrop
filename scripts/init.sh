@@ -38,7 +38,7 @@ begins_with_short_option()
 # THE DEFAULTS INITIALIZATION - OPTIONALS
 _arg_project_name="waterdrop"
 _arg_drupal="^10"
-_arg_extra_project=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/varnish_purge' 'drupal/views_bulk_operations')
+_arg_extra_project=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/purge_purger_http' 'drupal/views_bulk_operations')
 _arg_reset_extra_projects="off"
 _arg_skip_asset_packagist="off"
 _arg_docker_volumes="on"
