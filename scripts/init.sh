@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# ARG_OPTIONAL_SINGLE([php-version],[],[Set the major php version.],[8.3])
 # ARG_OPTIONAL_SINGLE([project-name],[P],[Set the project name.],[waterdrop])
 # ARG_OPTIONAL_SINGLE([drupal],[D],[Set the major Drupal version.],[^10])
 # ARG_OPTIONAL_REPEATED([extra-project],[e],[An extra project to include in composer.json. Repeat for multiple values. Like drupal/devel.],['drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/varnish_purge' 'drupal/views_bulk_operations'])
@@ -36,9 +37,10 @@ begins_with_short_option()
 }
 
 # THE DEFAULTS INITIALIZATION - OPTIONALS
+_arg_php_version="8.3"
 _arg_project_name="waterdrop"
 _arg_drupal="^10"
-_arg_extra_project=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/purge_purger_http' 'drupal/views_bulk_operations')
+_arg_extra_project=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/views_bulk_operations')
 _arg_reset_extra_projects="off"
 _arg_skip_asset_packagist="off"
 _arg_docker_volumes="on"
@@ -52,11 +54,13 @@ _arg_env_file="on"
 print_help()
 {
 	printf '%s\n' "Initializes Drupal based on drupal/recommended-project and a few other nice to have modules, sets up Docker volumes/network/secrets, adjust the names of things to what you want to call the project, and adds a .env file to help make building simpler."
-	printf 'Usage: %s [-P|--project-name <arg>] [-D|--drupal <arg>] [-e|--extra-project <arg>] [-r|--(no-)reset-extra-projects] [--(no-)skip-asset-packagist] [--(no-)docker-volumes] [-n|--docker-network <arg>] [--(no-)docker-secrets] [--host-port <arg>] [--db-host-port <arg>] [--(no-)env-file] [-h|--help]\n' "$0"
+	printf 'Usage: %s [--php-version <arg>] [-P|--project-name <arg>] [-D|--drupal <arg>] [-e|--extra-project <arg>] [-r|--(no-)reset-extra-projects] [--(no-)skip-asset-packagist] [--(no-)docker-volumes] [-n|--docker-network <arg>] [--(no-)docker-secrets] [--host-port <arg>] [--db-host-port <arg>] [--(no-)env-file] [-h|--help]\n' "$0"
+	printf 'Usage: %s [--php-version <arg>] [-P|--project-name <arg>] [-D|--drupal <arg>] [-e|--extra-project <arg>] [-r|--(no-)reset-extra-projects] [--(no-)skip-asset-packagist] [--(no-)docker-volumes] [-n|--docker-network <arg>] [--(no-)docker-secrets] [--host-port <arg>] [--db-host-port <arg>] [--(no-)env-file] [-h|--help]\n' "$0"
+	printf '\t%s\n' "--php-version: Set the major php version to use. (default: '8.3')"
 	printf '\t%s\n' "-P, --project-name: Set the project name. (default: 'waterdrop')"
 	printf '\t%s\n' "-D, --drupal: Set the major Drupal version. (default: '^10')"
 	printf '\t%s' "-e, --extra-project: An extra project to include in composer.json. Repeat for multiple values. Like drupal/devel. (default array elements:"
-	printf " '%s'" 'drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/purge' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/purge_purger_http' 'drupal/views_bulk_operations'
+	printf " '%s'" 'drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/views_bulk_operations'
 	printf ')\n'
 	printf '\t%s\n' "-r, --reset-extra-projects, --no-reset-extra-projects: Do not use the default list of additional composer projects. (off by default)"
 	printf '\t%s\n' "--skip-asset-packagist, --no-skip-asset-packagist: Do not add asset packagist to composer.json (off by default)"
@@ -76,6 +80,14 @@ parse_commandline()
 	do
 		_key="$1"
 		case "$_key" in
+		  --php-version)
+          test $# -lt 2 && die "Missing value for the optional argument '$_key'." 1
+          _arg_php_version="$2"
+          shift
+          ;;
+      --php-version=*)
+        _arg_php_version="${_key##--php-version=}"
+        ;;
 			-P|--project-name)
 				test $# -lt 2 && die "Missing value for the optional argument '$_key'." 1
 				_arg_project_name="$2"
@@ -196,7 +208,7 @@ fi
 USE_EXTRA_PROJECTS=();
 if [[ $_arg_reset_extra_projects == "on" ]]; then
   echo "Resetting extra projects.";
-  DEFAULT_EXTRAS=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic' 'drupal/purge' 'drupal/purge_purger_http' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/views_bulk_operations');
+  DEFAULT_EXTRAS=('drush/drush' 'drupal/admin_toolbar' 'drupal/module_filter' 'drupal/pathauto' 'drupal/pathologic:^2.0@alpha' 'drupal/search_api' 'drupal/search_api_page' 'drupal/symfony_mailer' 'drupal/twig_tweak' 'drupal/views_bulk_operations');
   NEW_EXTRAS=();
   for i in ${_arg_extra_project[@]}  ; do
       KEEP=1;
@@ -343,14 +355,20 @@ fi
 # Create a .env file for the build script to use.
 if [[ $_arg_env_file == "on" ]]; then
   echo "PROJECTNAME=${_arg_project_name}" | tee -a .env;
-  echo "PHP8_APACHE_IMAGE_TAG=8.1-apache-bullseye" | tee -a .env;
-  echo "PHP8_APACHE_EXTENSIONS_DIRECTORY=/usr/local/lib/php/extensions/no-debug-non-zts-20210902" | tee -a .env;
+  echo "PHP_VERSION=${_arg_php_version}"
   echo "WATERDROP_DEV_IMAGE_TAG=${_arg_project_name}:dev" | tee -a .env;
+  echo "WATERDROP_TEST_IMAGE_TAG=${_arg_project_name}:test" | tee -a .env;
+  echo "WATERDROP_PROD_IMAGE_TAG=${_arg_project_name}:prod" | tee -a .env;
 fi
 
 # Since app/src doesn't exist until we run composer, and app/src/config_sync is not part
 # of the Drupal scaffold, add it here.
 mkdir app/src/config_sync;
+
+touch secrets/${_arg_project_name}_db_pass
+touch secrets/${_arg_project_name}_root_db_pass
+touch secrets/${_arg_project_name}_drupal_settings_hash_salt
+touch secrets/${_arg_project_name}_environment
 
 # Echo out ending messages.
 echo "Waterdrop initialization is finished.";
@@ -358,7 +376,6 @@ echo "";
 echo "";
 
 echo "There are some manual tasks to finish before you will be finished.";
-echo "  * REQUIRED: Edit app/Dockerfile and set the webuser uid and gid to the same value as your local system user.";
 echo "  * REQUIRED: CHOWN the _data folder in your private and public docker volumes to the uid and gid of your local system user.";
 echo "  * Edit app/src/composer.json and set the project name/licenses/maintainer/etc.";
 echo "  * REQUIRED: Add your projects secret information to the secrets/* files.";

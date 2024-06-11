@@ -1,2 +1,0 @@
-#!/command/with-contenv /bin/bash
-/usr/sbin/varnishd -F -a :8080  $VARNISH_FLAGS -f /etc/varnish/default.vcl -S $VARNISH_SECRET_FILE $VARNISH_STORAGE

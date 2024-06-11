@@ -1,0 +1,2 @@
+#!/command/with-contenv /bin/bash
+while true; do sleep 300 && cd /var/www/html && ./vendor/bin/drush core:cron; done;

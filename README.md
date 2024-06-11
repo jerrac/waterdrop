@@ -1,12 +1,17 @@
 # Waterdrop
-Waterdrop is a Drupal 10 in Docker quickstart project. Just run the initialize script, update composer.json with your project info, build the dev image, and run `docker compose -f dev.run.yml up` and you have a working Drupal 10 instance. Well, almost, still need to do an install.
+Waterdrop is a Drupal 10 in Docker quickstart project. Just run the initialize script, update composer.json with your project info, build the dev image, and run `docker compose -f dev.run.yml up` and you have a working Drupal 10 instance. Well, almost, still need to install Drupal.
 
-It is meant to get a development environment up and running quickly. I include [Asset Packagist](https://asset-packagist.org/) configuration and use [s6-overlay](https://github.com/just-containers/s6-overlay) to run both Apache and Varnish in the same image.
+It is meant to get a development environment up and running quickly. I include [Asset Packagist](https://asset-packagist.org/) configuration and use [s6-overlay](https://github.com/just-containers/s6-overlay) to run both Apache and a cron service in the same image.
 
 I have structured it the same as my various production apps, since I will be using it to launch full apps. But, over the years I have found that when apps try to tell me how to run them in production, there is always something that just doesn't fit in my environment. So I leave how you go from dev to prod, up to you.
 
 > NOTE: When you move to prod, make sure you think through all the settings with security in mind. Waterdrop is made with 
 > development in mind. It is NOT secure. 
+
+> Note on packages.sury.org:
+> Ondrej Sury is the Debian package maintainer. He provides a more up to date
+> version of php packages for Ubuntu and Debian via his custom apt repo
+> and ppas. He has a Patreon if you are interested.
 
 ## Prerequisites
 You should have Docker installed along with the Docker Compose plugin.
@@ -42,21 +47,14 @@ After installation:
 When exporting and importing Drupal configuration, use the `app/src/config_sync` directory. If you need to change that, make sure to update `app/docker-config/drupal/settings.php`.
 
 ### Composer Commands
-You can run Composer commands either using their Docker image, or your local install of Composer. 
+You can run Composer commands the [scripts/composer.sh](scripts/composer.sh) script, or your local instance of Composer. 
 
 In both cases, use the `--ignore-platform-reqs` flag to bypass Composer's checks that your system can run the projects/libraries you are adding or updating. This does mean you need to make sure to adjust the Dockerfile to have those requirements without being prompted by Composer.
 
-Using Composer via their Docker image looks something like:
+Using Composer via the script looks like this:
 
 ```bash
-docker run --rm --user $(id -u):$(id -g) --volume $PWD/tmp/composer_cache:/tmp --volume $PWD/app/src:/app \
-      composer require --ignore-platform-reqs --no-interaction --no-ansi drupal/modulename;
+bash scripts/composer.sh composer require --ignore-platform-reqs --no-interaction --no-ansi drupal/modulename;
 ```
-Where you set up a directory in `tmp/composer_cache` to make sure Composer can reuse downloaded files.
 
-## Varnish
-Varnish 7.2 is installed in the Docker image and s6-overlay starts it alongside Apache 2.4. 
-
-Apache is exposed on port 80, Varnish on port 8080.
-
-The `dev.run.yml` Compose file is pointed at Apache.
+See the script for what environment vars you can use to control it.
